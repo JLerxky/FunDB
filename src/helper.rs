@@ -6,7 +6,7 @@ use lazy_static::lazy_static;
 use ruc::*;
 use serde::{de::DeserializeOwned, Serialize};
 // use std::{borrow::Cow, cmp::Ordering, convert::TryInto, env, fmt, fs, mem, ops::Deref};
-use std::{borrow::Cow, cmp::Ordering, env, fmt, ops::Deref};
+use std::{borrow::Cow, cmp::Ordering, env, fmt, ops::Deref, usize};
 
 lazy_static! {
     pub static ref CACHE_DIR: String = env::var("FUNDB_DIR").unwrap_or_else(|_| "/tmp".to_owned());
@@ -227,18 +227,24 @@ where
 #[inline(always)]
 pub(crate) fn sled_open(path: &str, is_tmp: bool) -> Result<sled::Db> {
     let config = sled::Config::default().path(path).temporary(is_tmp);
-    match config.open() {
-        Ok(db) => Ok(db),
-        Err(e) => Err()
-    }
+    config.open().c(d!("Failed to open sled!"))
 }
 
 #[inline(always)]
 pub(crate) fn read_db_len(path: &str) -> Result<usize> {
-    todo!()
+    if let Ok(db) = sled_open(path, false) {
+        Ok(bincode::deserialize::<usize>(&db.get("len").unwrap().unwrap()).unwrap())
+    } else {
+        Err(eg!("Failed to open sled!"))
+    }
 }
 
 #[inline(always)]
 pub(crate) fn write_db_len(path: &str, len: usize) -> Result<()> {
-    todo!()
+    if let Ok(db) = sled_open(path, false) {
+        db.insert("len", bincode::serialize(&len).unwrap());
+        Ok(())
+    } else {
+        Err(eg!("Failed to open sled!"))
+    }
 }
