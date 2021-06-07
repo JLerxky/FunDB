@@ -2,8 +2,8 @@
 //! # An mixed(mem&disk) fundb implementation
 //!
 
-#![deny(warnings)]
-#![deny(missing_docs)]
+// #![deny(warnings)]
+// #![deny(missing_docs)]
 #![allow(clippy::upper_case_acronyms)]
 
 pub mod helper;

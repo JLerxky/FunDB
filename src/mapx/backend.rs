@@ -122,7 +122,11 @@ where
     // Imitate the behavior of '.iter()'
     #[inline(always)]
     pub(super) fn iter(&self) -> MapxIter<K, V> {
-        todo!()
+        MapxIter {
+            iter: self.db.iter(),
+            _pd0: self._pd0,
+            _pd1: self._pd1,
+        }
     }
 
     pub(super) fn contains_key(&self, key: &K) -> bool {
@@ -177,7 +181,16 @@ where
 {
     type Item = (K, V);
     fn next(&mut self) -> Option<Self::Item> {
-        todo!()
+        match self.iter.next() {
+            Some(result) => match result {
+                Ok((k, v)) => Some((
+                    pnk!(bincode::deserialize(&k)),
+                    pnk!(serde_json::from_slice(&v)),
+                )),
+                Err(_) => None,
+            },
+            None => None,
+        }
     }
 }
 
@@ -187,7 +200,16 @@ where
     V: Clone + Eq + PartialEq + Serialize + DeserializeOwned + fmt::Debug,
 {
     fn next_back(&mut self) -> Option<Self::Item> {
-        todo!()
+        match self.iter.next_back() {
+            Some(result) => match result {
+                Ok((k, v)) => Some((
+                    pnk!(bincode::deserialize(&k)),
+                    pnk!(serde_json::from_slice(&v)),
+                )),
+                Err(_) => None,
+            },
+            None => None,
+        }
     }
 }
 
@@ -212,7 +234,7 @@ where
     V: Clone + Eq + PartialEq + Serialize + DeserializeOwned + fmt::Debug,
 {
     fn eq(&self, other: &Mapx<K, V>) -> bool {
-        todo!()
+        self.cnter.eq(&other.cnter) && self.cnter_path.eq(&other.cnter_path)
     }
 }
 
